@@ -4,16 +4,27 @@ function parse_issues_items(issue_page) {
 
     issue_list.forEach(
         function(issue, currentIndex, listObj) {
-            const issue_item = {}
+            const issue_item = {
+                "id": `issue-${currentIndex}`,
+                "tooltip": null
+            }
+
             const title = issue.querySelector("div > div.issuable-main-info > div.issue-title.title > span > a")
+            const start_date = issue.querySelector("div > div.issuable-main-info > div.issuable-info > span.issuable-authored > time")
             const due_date = issue.querySelector("div > div.issuable-main-info > div.issuable-info > span.issuable-due-date")
 
             if (title) {
-                issue_item.title = title.innerText
+                issue_item.name = title.innerText
             }
 
-            if (due_date) {
-                issue_item.due_date = due_date.innerText
+            if (start_date && due_date) {
+                issue_item.values = [
+                    {
+                        from: start_date.innerText,
+                        to: due_date.innerText,
+                        label: title.innerText,
+                    }
+                ]
             }
 
             issue_items.push(issue_item);
@@ -22,43 +33,54 @@ function parse_issues_items(issue_page) {
     return issue_items;
 }
 
-function build_gantt_chart(task_list) {
-    const gantt_chart_object = document.createElement("div");
-    task_list.forEach(
-        function (task, currentIndex, listObj) {
-            const task_object = document.createElement("div");
-            task_object.textContent = `${currentIndex}.${task.title} : due_date ${task.due_date}`;
-            gantt_chart_object.appendChild(task_object)
-        }
-    );
-    return gantt_chart_object
+function build_gantt_chart(chart_id, task_list) {
+    $(`#${chart_id}`).gantt({
+        source: task_list,
+        scale: "weeks",
+        minScale: "days",
+        navigate: "scroll"
+    });
+
+    $(".fn-gantt .dataPanel").css("background-image", `url(${chrome.runtime.getURL("images/grid.png")})`)
+    $(".fn-gantt .navigate .nav-slider-button").css("background", `url(${chrome.runtime.getURL("images/slider_handle.png")}) center center no-repeat;`)
+    $(".fn-gantt .nav-link").css("background", `#595959 url(${chrome.runtime.getURL("images/icon_sprite.png")}) !important;`)
 }
 
-const milestone_list = document.querySelectorAll("#content-body > div.milestones > ul > li");
 
-// `document.querySelectorAll` may return empty NodeList if the selector doesn't match anything.
-if (milestone_list.length > 0) {
-    milestone_list.forEach(
-        function (milestone, currentIndex, listObj) {
-            const issue_link = milestone.querySelector("div > div.milestone-progress > a:nth-child(2)")
-            const issue_url = issue_link.getAttribute('href');
-            fetch(issue_url, {
-                headers: {
-                    'Accept': 'application/json',
-                }
-            }).then(r => r.json()).then(issue_page_content => {
-                const parser = new DOMParser();
-	            const issue_page = parser.parseFromString(issue_page_content.html, 'text/html');
+$(function() {
 
-                // parse issue items
-                const issue_items = parse_issues_items(issue_page)
+    "use strict";
 
-                // draw and build the gantt chart object
-                const gantt_chart_object = build_gantt_chart(issue_items)
+    const milestone_list = document.querySelectorAll("#content-body > div.milestones > ul > li");
 
-                // insert the object after each milestone
-                milestone.insertAdjacentElement("afterend", gantt_chart_object);
-            })
-        }
-    );
-}
+    // `document.querySelectorAll` may return empty NodeList if the selector doesn't match anything.
+    if (milestone_list.length > 0) {
+        milestone_list.forEach(
+            function (milestone, currentIndex, listObj) {
+                const issue_link = milestone.querySelector("div > div.milestone-progress > a:nth-child(2)")
+                const issue_url = issue_link.getAttribute('href');
+                fetch(issue_url, {
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                }).then(r => r.json()).then(issue_page_content => {
+                    const parser = new DOMParser();
+                    const issue_page = parser.parseFromString(issue_page_content.html, 'text/html');
+
+                    // parse issue items
+                    const issue_items = parse_issues_items(issue_page)
+
+                    // insert the gantt after each milestone
+                    const gantt_object = document.createElement("div");
+                    gantt_object.setAttribute("id", `gantt-chart-${currentIndex}`);
+                    // gantt_object.textContent = issue_items.toString()
+                    milestone.insertAdjacentElement("afterend", gantt_object);
+
+                    // draw and build the gantt chart object
+                    build_gantt_chart(`gantt-chart-${currentIndex}`, issue_items)
+                })
+            }
+        );
+    }
+
+});

@@ -3,11 +3,30 @@
     "name": "Gitlab Gantt chart",
     "version": "1.0",
     "description": "A chrome extension that help user transfer gitlab milestone to gantt chart",
+    "permissions": [
+        "scripting"
+    ],
     "content_scripts": [
         {
-            "js": ["scripts/content.js"],
+            "css": [
+                "css/gantt.min.css"
+            ],
+            "js": [
+                "scripts/jquery.min.js",
+                "scripts/jquery.fn.gantt.min.js",
+                "scripts/content.js"
+            ],
             "matches": [
                 "https://gitlab.com/*/*/-/milestones*"
+            ],
+            "web_accessible_resources": [
+                {
+                    "resources": [
+                        "*"
+                    ],
+                    "matches": "https://*",
+                    "use_dynamic_url": true
+                }
             ]
         }
     ]
