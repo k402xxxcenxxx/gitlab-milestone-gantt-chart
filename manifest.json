@@ -1,0 +1,14 @@
+{
+    "manifest_version": 3,
+    "name": "Gitlab Gantt chart",
+    "version": "1.0",
+    "description": "A chrome extension that help user transfer gitlab milestone to gantt chart",
+    "content_scripts": [
+        {
+            "js": ["scripts/content.js"],
+            "matches": [
+                "https://gitlab.com/*/*/-/milestones*"
+            ]
+        }
+    ]
+}
