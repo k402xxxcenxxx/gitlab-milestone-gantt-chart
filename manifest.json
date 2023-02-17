@@ -6,6 +6,16 @@
     "permissions": [
         "scripting"
     ],
+    "web_accessible_resources": [
+        {
+            "resources": [ 
+                "images/*" 
+            ],
+            "matches": [ 
+                "https://gitlab.com/*" 
+            ]
+        }
+    ],
     "content_scripts": [
         {
             "css": [
@@ -18,15 +28,6 @@
             ],
             "matches": [
                 "https://gitlab.com/*/*/-/milestones*"
-            ],
-            "web_accessible_resources": [
-                {
-                    "resources": [
-                        "*"
-                    ],
-                    "matches": "https://*",
-                    "use_dynamic_url": true
-                }
             ]
         }
     ]
