@@ -24,7 +24,7 @@ async function _parse_issue_item(issue, currentIndex) {
 
             issue_item = {
                 id: `issue-${currentIndex}`,
-                name: title.innerText,
+                desc: title.innerText,
                 values: [
                     {
                         from: start_date,
@@ -33,25 +33,24 @@ async function _parse_issue_item(issue, currentIndex) {
                         desc: issue_description,
                         dataObj: issue_item_url
                     }
-                ],
+                ]
             }
         }
     }
     return issue_item;
 }
 
-async function parse_issues_items(issue_page) {
+async function parse_issues_items(issue_page, prefix) {
     let issue_items = []
-    const issue_list = issue_page.querySelectorAll("ul.issues-list > li")
+    const issue_list = issue_page.querySelectorAll("ul.issues-list > li");
 
     for (let index = 0; index < issue_list.length; index++) {
-        const issue_item = await _parse_issue_item(issue_list[index], index);
+        const issue_item = await _parse_issue_item(issue_list[index], `${prefix}-${index}`);
         if (issue_item) {
             issue_items.push(issue_item);
         }
     }
-
-    return issue_items;
+    return issue_items
 }
 
 function build_gantt_chart(id, gantt_items) {
@@ -67,31 +66,44 @@ function build_gantt_chart(id, gantt_items) {
     });
 }
 
-async function get_issue_items(issue_url) {
-    let issue_items = [];
+async function get_gantt_items(milestone_url_list) {
+    let gantt_items = [];
+    for (let index = 0; index < milestone_url_list.length; index++) {
+        const milestone_item = milestone_url_list[index];
 
-    const response = await fetch(issue_url, {
-        headers: {
-            'Accept': 'application/json',
+        const response = await fetch(milestone_item.url, {
+            headers: {
+                'Accept': 'application/json',
+            }
+        })
+        const issue_list_content = await response.json();
+        const parser = new DOMParser();
+        const issue_page = parser.parseFromString(issue_list_content.html, 'text/html');
+
+        // parse issue items
+        let issue_items = await parse_issues_items(issue_page, index);
+        if (issue_items.length > 0) {
+            issue_items[0].name = milestone_item.title;
+        } else {
+            issue_items = [{
+                id: `issue-${index}`,
+                name: milestone_item.title,
+                values: []
+            }]
         }
-    })
-    const issue_list_content = await response.json();
-    const parser = new DOMParser();
-    const issue_page = parser.parseFromString(issue_list_content.html, 'text/html');
-
-    // parse issue items
-    issue_items = await parse_issues_items(issue_page)
-    return issue_items
+        gantt_items.push(...issue_items);
+    }
+    return gantt_items
 }
 
-async function insert_gantt_chart(id, position, issue_url) {
+async function insert_gantt_chart(id, position, milestone_url_list) {
     // create DOM object
     const gantt_object = document.createElement("div");
     gantt_object.setAttribute("id", id);
-    position.insertAdjacentElement("afterend", gantt_object);
+    position.insertAdjacentElement("beforebegin", gantt_object);
 
     // collect gantt items
-    const gantt_items = await get_issue_items(issue_url);
+    const gantt_items = await get_gantt_items(milestone_url_list);
 
     // build the gantt chart object
     build_gantt_chart(id, gantt_items)
@@ -102,15 +114,22 @@ $(function() {
     const milestone_list = document.querySelectorAll("#content-body > div.milestones > ul > li");
     if (milestone_list.length > 0) {
 
+        milestone_url_list = []
+
         // create gantt chart for each milestone
         milestone_list.forEach(
             function (milestone, currentIndex, listObj) {
-                const issue_link = milestone.querySelector("div > div.milestone-progress > a:nth-child(2)")
-                const issue_url = issue_link.getAttribute('href');
-
-                // insert the gantt after each milestone
-                insert_gantt_chart(`gantt-chart-${currentIndex}`, milestone, issue_url);
+                const milestone_link = milestone.querySelector("div > div.milestone-progress > a:nth-child(2)")
+                const milestone_url = milestone_link.getAttribute('href');
+                const milestone_title = milestone.querySelector("div > div > div:nth-child(1) > strong > a").innerText;
+                milestone_url_list.push({
+                    title: milestone_title,
+                    url: milestone_url
+                })
             }
         );
+
+        // insert the gantt on the top
+        insert_gantt_chart(`gantt-chart`, document.querySelector("#content-body > div.milestones"), milestone_url_list);
     }
 });
