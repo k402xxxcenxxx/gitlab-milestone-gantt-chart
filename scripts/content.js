@@ -62,7 +62,8 @@ function build_gantt_chart(id, gantt_items) {
         navigate: "scroll",
         onItemClick: function(url) {
             window.open(url, "_blank");
-        }
+        },
+        waitText: ""
     });
 }
 
