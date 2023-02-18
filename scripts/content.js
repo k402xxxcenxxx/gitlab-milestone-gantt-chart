@@ -23,16 +23,17 @@ async function _parse_issue_item(issue, currentIndex) {
             const due_date = new Date(due_date_string.innerText)
 
             issue_item = {
-                "id": `issue-${currentIndex}`,
-                "name": title.innerText,
-                "tooltip": null,
-                "values": [
+                id: `issue-${currentIndex}`,
+                name: title.innerText,
+                values: [
                     {
                         from: start_date,
                         to: due_date.toLocaleDateString('zh-Hans-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }),
                         label: title.innerText,
+                        desc: issue_description,
+                        dataObj: issue_item_url
                     }
-                ]
+                ],
             }
         }
     }
@@ -58,7 +59,10 @@ function build_gantt_chart(id, gantt_items) {
         source: gantt_items,
         scale: "weeks",
         minScale: "days",
-        navigate: "scroll"
+        navigate: "scroll",
+        onItemClick: function(url) {
+            window.open(url, "_blank");
+        }
     });
 }
 

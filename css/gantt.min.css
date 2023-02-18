@@ -208,6 +208,7 @@
     color: #414B57 !important;
     text-align: center;
     font-size: 11px;
+    cursor: pointer;
 }
 
 .fn-gantt .ganttRed {
