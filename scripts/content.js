@@ -11,6 +11,9 @@ function build_gantt_chart(id, gantt_data) {
 
     gantt_data.project.issues.nodes.forEach(
         function (issue, currentIndex, listObj) {
+            if (issue.milestone == null || milestone_dict[issue.milestone.id] == undefined) {
+                return;
+            }
             // parse start date
             const start_date_re = new RegExp(/^\/start_date\ *(\d{4}\/(0?[1-9]|1[012])\/(0?[1-9]|[12][0-9]|3[01])*)/g);
             const start_date_pattern = start_date_re.exec(issue.description);
