@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
-    "name": "Gitlab Gantt chart",
-    "version": "2.0",
+    "name": "Gantt Chart plugin: for GitLab",
+    "version": "2.1",
     "description": "A chrome extension that help user transfer gitlab milestone to gantt chart",
     "web_accessible_resources": [
         {
