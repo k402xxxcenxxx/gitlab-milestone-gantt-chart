@@ -1,0 +1,42 @@
+name: Release the competition boundle
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref }}   # checkout the correct branch name
+        fetch-depth: 0                # fetch the whole repo history
+        path: tmp
+
+    - name: Create ZIP archive
+      run: |
+          mkdir build
+          cd tmp
+          zip -r ../build/plugin_bundle.zip .
+          
+    - uses: actions/upload-artifact@v4
+      with:
+        name: plugin_bundle
+        path: build/plugin_bundle.zip
+
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@2.9.0
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: build/plugin_bundle.zip
+        file_glob: true
+        asset_name: plugin_bundle
+        tag: ${{ github.ref }}
+        overwrite: true
