@@ -24,6 +24,8 @@ jobs:
       run: |
           mkdir build
           cd tmp
+          rm -rf .github
+          rm -rf .git
           zip -r ../build/plugin_bundle.zip .
           
     - uses: actions/upload-artifact@v4
