@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Gantt Chart plugin: for GitLab",
-    "version": "2.1",
+    "version": "2.3",
     "description": "A chrome extension that help user transfer gitlab milestone to gantt chart",
     "web_accessible_resources": [
         {
@@ -33,5 +33,10 @@
                 "https://*/*/*/-/milestones*"
             ]
         }
-    ]
+    ],
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "gantt-chart-plugin-for-gitlab.k402xxxcenxxx@gmail.com"
+        }
+    }
 }
