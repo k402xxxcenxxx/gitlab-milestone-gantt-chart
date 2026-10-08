@@ -22,7 +22,8 @@
     "content_scripts": [
         {
             "css": [
-                "css/gantt.min.css"
+                "css/gantt.min.css",
+                "css/custom.css"
             ],
             "js": [
                 "scripts/jquery.min.js",

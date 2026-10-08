@@ -1,0 +1,60 @@
+/* Custom styles for the Gantt chart (loaded after gantt.min.css) */
+
+/* --- Open vs. closed issues --- */
+.fn-gantt .bar.ganttIssueOpen {
+    background-color: #D0E4FD;          /* light blue */
+}
+.fn-gantt .bar.ganttIssueOpen .fn-label {
+    color: #1F3B63 !important;
+}
+.fn-gantt .bar.ganttIssueClosed {
+    background-color: #CDEBC5;          /* light green */
+    opacity: 0.85;
+}
+.fn-gantt .bar.ganttIssueClosed .fn-label {
+    color: #2E5A27 !important;
+    text-decoration: line-through;
+}
+
+/* --- Milestone bar (start and due dates only) --- */
+.fn-gantt .bar.ganttMilestone {
+    background-color: #6B4FBB;          /* purple */
+}
+.fn-gantt .bar.ganttMilestone .fn-label {
+    color: #FFFFFF !important;
+    text-shadow: none;
+}
+.fn-gantt .bar.ganttMilestoneEstimated {
+    background-color: #A895D8;          /* lighter when dates are estimated */
+}
+
+/* --- "No milestone" group bar (period covered by its issues) --- */
+.fn-gantt .bar.ganttNoMilestone {
+    background-color: #9E9E9E;          /* grey */
+}
+.fn-gantt .bar.ganttNoMilestone .fn-label {
+    color: #FFFFFF !important;
+    text-shadow: none;
+}
+
+/* --- Collapse/expand toggle on the milestone name --- */
+.fn-gantt .leftPanel .gantt-ms-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+.fn-gantt .leftPanel .gantt-ms-toggle:hover {
+    color: #6B4FBB;
+    text-decoration: underline;
+}
+
+/* --- Current day line --- */
+.fn-gantt .dataPanel .gantt-today-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    margin-left: -1px;
+    background-color: #E5322D;
+    z-index: 15;                        /* above the bars (z-index 10) */
+    pointer-events: none;               /* do not block clicks on the bars */
+}
