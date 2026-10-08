@@ -1,3 +1,12 @@
+// Escape HTML special characters. jquery.fn.gantt concatenates label, desc and
+// name directly into HTML, so any text coming from GitLab must be escaped to
+// prevent XSS (e.g. an issue title such as <img src=x onerror=...>).
+function escape_html(value) {
+    return String(value ?? "").replace(/[&<>"']/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+}
+
 function build_gantt_chart(id, gantt_data) {
     let milestone_dict = {}
     gantt_data.project.milestones.nodes.forEach(
@@ -24,13 +33,13 @@ function build_gantt_chart(id, gantt_data) {
 
             milestone_dict[issue.milestone.id].issue_list.push({
                 id: issue.id,
-                desc: issue.description,
+                desc: escape_html(issue.description),
                 values: [
                     {
                         from: start_date,
                         to: issue.dueDate,
-                        label: issue.title,
-                        desc: issue.description,
+                        label: escape_html(issue.title),
+                        desc: escape_html(issue.description),
                         dataObj: issue.webUrl
                     }
                 ]
@@ -42,11 +51,11 @@ function build_gantt_chart(id, gantt_data) {
     Object.keys(milestone_dict).forEach(
         function (milestone_id, currentIndex, listObj) {
             if (milestone_dict[milestone_id].issue_list.length > 0) {
-                milestone_dict[milestone_id].issue_list[0].name = milestone_dict[milestone_id].title;
+                milestone_dict[milestone_id].issue_list[0].name = escape_html(milestone_dict[milestone_id].title);
             } else {
                 milestone_dict[milestone_id].issue_list = [{
                     id: milestone_id,
-                    name: milestone_dict[milestone_id].title,
+                    name: escape_html(milestone_dict[milestone_id].title),
                     values: []
                 }]
             }
@@ -60,7 +69,10 @@ function build_gantt_chart(id, gantt_data) {
         minScale: "days",
         navigate: "scroll",
         onItemClick: function(url) {
-            window.open(url, "_blank");
+            // Only open https links, without giving the new tab access to window.opener
+            if (typeof url === "string" && url.startsWith("https://")) {
+                window.open(url, "_blank", "noopener,noreferrer");
+            }
         },
         waitText: ""
     });
@@ -87,9 +99,12 @@ $(function() {
             "content-type": "application/json"
         },
         body: JSON.stringify({
+            // Pass the project path as a GraphQL variable instead of
+            // interpolating it into the query string
+            variables: { fullPath: project_full_path },
             query: `
-                query {
-                    project(fullPath: "${project_full_path}") {
+                query($fullPath: ID!) {
+                    project(fullPath: $fullPath) {
                       milestones {
                         nodes {
                           id
